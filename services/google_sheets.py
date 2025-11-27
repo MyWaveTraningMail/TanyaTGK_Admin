@@ -75,10 +75,18 @@ async def get_available_dates(trainer: str, days_ahead: int = 30) -> List[str]:
         return []
 
 
-async def get_available_times(trainer: str, date_str: str) -> List[Dict]:
+async def get_available_times(trainer: str, date_str: str, lesson_type: str = None) -> List[Dict]:
     """
     date_str — в формате "15 марта"
-    Возвращает список словарей: {'time': '10:00', 'free': 2, 'price': 1800, 'row': 5}
+    lesson_type — опционально фильтровать по типу занятия (trial, group_single, group_subscription, individual)
+    
+    Возвращает список словарей: {
+        'time': '10:00',
+        'free': 2,
+        'price': 1800,
+        'lesson_type': 'individual',
+        'row_index': 5
+    }
     """
     try:
         client = _get_client()
@@ -96,14 +104,21 @@ async def get_available_times(trainer: str, date_str: str) -> List[Dict]:
                 row_date = datetime.strptime(row["Дата"], "%d.%m.%Y")
                 if row_date.day == target_day and row_date.month == target_month:
                     free = int(row.get("Свободно", 0))
+                    
+                    # Фильтруем по типу занятия если указан
+                    row_lesson_type = row.get("Типтренировки", "").lower()
+                    if lesson_type and row_lesson_type != lesson_type.lower():
+                        continue
+                    
                     if free > 0:
                         result.append({
                             "time": row["Время"],
                             "free": free,
-                            "price": int(row["Цена"]),
+                            "price": int(row.get("Цена", 0)),
+                            "lesson_type": row_lesson_type or "group_single",
                             "row_index": idx
                         })
-            except:
+            except ValueError:
                 continue
         return result
     except Exception as e:
@@ -137,17 +152,84 @@ async def update_free_slots(row_index: int, delta: int) -> bool:
         client = _get_client()
         sheet = client.open_by_key(GOOGLE_SHEET_ID).worksheet("Schedule")
         
+        # Находим столбец "Свободно"
+        headers = sheet.row_values(1)
+        free_col = headers.index("Свободно") + 1 if "Свободно" in headers else 5
+        
         # Получаем текущее значение
-        cell = sheet.cell(row_index, col=5)  # Столбец "Свободно" (примерно 5-й)
+        cell = sheet.cell(row_index, col=free_col)
         current = int(cell.value or 0)
         new_value = max(0, current + delta)
         
         # Обновляем значение
-        sheet.update_cell(row_index, 5, new_value)
+        sheet.update_cell(row_index, free_col, new_value)
         logger.info(f"Обновлены свободные места: строка {row_index}, было {current}, стало {new_value}")
         return True
     except Exception as e:
         logger.error(f"Ошибка обновления свободных мест: {e}")
+        return False
+
+
+async def get_lesson_type_from_sheet(trainer: str, date_str: str, time_str: str) -> str:
+    """
+    Получает тип занятия из Google Sheets для заданного слота.
+    
+    Args:
+        trainer: Имя тренера
+        date_str: Дата в формате "15 марта"
+        time_str: Время в формате "10:00"
+    
+    Returns:
+        Тип занятия (trial, group_single, group_subscription, individual) или "group_single" по умолчанию
+    """
+    try:
+        client = _get_client()
+        sheet = client.open_by_key(GOOGLE_SHEET_ID).worksheet("Schedule")
+        all_records = sheet.get_all_records()
+
+        target_day = int(date_str.split()[0])
+        target_month = list(MONTHS_RU.values()).index(date_str.split()[1]) + 1
+
+        for row in all_records:
+            if row.get("Тренер") != trainer or row.get("Время") != time_str:
+                continue
+            try:
+                row_date = datetime.strptime(row["Дата"], "%d.%m.%Y")
+                if row_date.day == target_day and row_date.month == target_month:
+                    lesson_type = row.get("Типтренировки", "group_single").lower()
+                    return lesson_type if lesson_type in ["trial", "group_single", "group_subscription", "individual"] else "group_single"
+            except ValueError:
+                continue
+        
+        return "group_single"
+    except Exception as e:
+        logger.error(f"Ошибка получения типа занятия: {e}")
+        return "group_single"
+
+
+async def update_lesson_type(row_index: int, lesson_type: str) -> bool:
+    """
+    Обновляет тип занятия в Google Sheets.
+    
+    Args:
+        row_index: Номер строки
+        lesson_type: Тип занятия (trial, group_single, group_subscription, individual)
+    
+    Returns:
+        True, если успешно
+    """
+    try:
+        client = _get_client()
+        sheet = client.open_by_key(GOOGLE_SHEET_ID).worksheet("Schedule")
+        
+        headers = sheet.row_values(1)
+        lesson_type_col = headers.index("Типтренировки") + 1 if "Типтренировки" in headers else 6
+        
+        sheet.update_cell(row_index, lesson_type_col, lesson_type)
+        logger.info(f"Обновлен тип занятия: строка {row_index} → {lesson_type}")
+        return True
+    except Exception as e:
+        logger.error(f"Ошибка обновления типа занятия: {e}")
         return False
 
 

@@ -15,7 +15,7 @@ from keyboards.booking import (
 from keyboards.lesson_type import lesson_type_keyboard
 from services.google_sheets import (
     get_available_trainers, get_available_dates, get_available_times,
-    log_event_to_sheet
+    log_event_to_sheet, update_free_slots, get_lesson_type_from_sheet, update_lesson_type
 )
 from services.google_calendar import create_calendar_event
 from services.yookassa import create_payment_link
@@ -189,6 +189,14 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     user_id = callback.from_user.id
 
+    # Получаем тип занятия из Google Sheets
+    lesson_type_from_sheet = await get_lesson_type_from_sheet(
+        data["trainer"],
+        data["date"].split("|")[0].strip(),
+        data["time"]
+    )
+    lesson_type = data.get("lesson_type", lesson_type_from_sheet)
+
     # Сохраняем в БД
     async with AsyncSessionLocal() as session:
         booking = Booking(
@@ -198,18 +206,22 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext):
             time=data["time"],
             price=data["price"],
             payment_type=data["payment_type"],
-            lesson_type=data.get("lesson_type", "group_single"),  # Тип занятия
+            lesson_type=lesson_type,  # Тип занятия из Sheets или выбранный
             status="pending"
         )
         session.add(booking)
         await session.commit()
         await session.refresh(booking)
 
+    # Обновляем свободные места в Google Sheets (шаг 3.2)
+    if "row_index" in data:
+        await update_free_slots(data["row_index"], delta=-1)
+
     # Создаём событие в календаре тренера (заглушка, реализуем позже)
     await create_calendar_event(booking)
 
     # Обновляем или считаем по абонементу
-    if data["payment_type"] == "subscription" and data.get("lesson_type") == "group_subscription":
+    if data["payment_type"] == "subscription" and lesson_type == "group_subscription":
         async with AsyncSessionLocal() as session:
             sub = await session.execute(
                 select(Subscription).where(Subscription.user_id == user_id)
@@ -222,18 +234,21 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext):
     else:
         booking.status = "pending"
     
-    await session.commit()
+    async with AsyncSessionLocal() as session:
+        await session.merge(booking)
+        await session.commit()
 
     # Заглушка вместо оплаты через Yookassa (шаг 10.2)
     await callback.message.edit_text(
         f"✅ <b>Запись подтверждена!</b>\n\n"
         f"📅 {booking.date}\n"
         f"🕐 {booking.time}\n"
-        f"👨‍🏫 {booking.trainer}\n\n"
+        f"👨‍🏫 {booking.trainer}\n"
+        f"📝 Тип: {lesson_type}\n\n"
         f"<b>Оплата:</b>\n{PAYMENT_MESSAGE}\n"
         f"После перевода кликни <code>Я оплатил(а)</code> или напиши админу! ✅",
         parse_mode="HTML"
     )
 
-    await log_event_to_sheet(user_id, f"booking: {booking.trainer} {booking.date} {booking.time}")
+    await log_event_to_sheet(user_id, f"booking: {booking.trainer} {booking.date} {booking.time} ({lesson_type})")
     await state.clear()
