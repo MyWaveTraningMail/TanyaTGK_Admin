@@ -3,6 +3,7 @@ from aiogram.types import Message
 
 from db.database import AsyncSessionLocal
 from db.models import Booking, Subscription
+from services.google_sheets import log_event_to_sheet
 from sqlalchemy import select
 
 router = Router(name="profile_router")
@@ -10,6 +11,12 @@ router = Router(name="profile_router")
 
 @router.message(F.text == "Мои занятия 📅")
 async def my_bookings(message: Message):
+    """Показывает все бронирования пользователя"""
+    telegram_id = message.from_user.id
+    
+    # Логируем событие
+    await log_event_to_sheet(telegram_id, "click: Мои занятия")
+    
     async with AsyncSessionLocal() as session:
         bookings = await session.execute(
             select(Booking).where(Booking.user_id == message.from_user.id).order_by(Booking.date.desc())
@@ -30,6 +37,12 @@ async def my_bookings(message: Message):
 
 @router.message(F.text == "Мои абонементы 🎟")
 async def my_subscriptions(message: Message):
+    """Показывает активные абонементы пользователя"""
+    telegram_id = message.from_user.id
+    
+    # Логируем событие
+    await log_event_to_sheet(telegram_id, "click: Мои абонементы")
+    
     async with AsyncSessionLocal() as session:
         subs = await session.execute(
             select(Subscription).where(Subscription.user_id == message.from_user.id)

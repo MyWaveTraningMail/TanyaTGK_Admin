@@ -4,10 +4,12 @@ from datetime import datetime, timedelta
 from aiogram import Bot
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.date import DateTrigger
+from apscheduler.triggers.interval import IntervalTrigger
 
-from db.models import Booking
+from db.models import Booking, User
 from db.database import AsyncSessionLocal
 from utils.constants import REMINDER_12H, REMINDER_2H
+from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler(timezone="Europe/Moscow")
@@ -94,5 +96,56 @@ async def send_2h_reminder(bot: Bot, booking_id: int):
 
 
 async def setup_scheduler(bot: Bot):
+    """Инициализирует планировщик задач"""
     scheduler.start()
-    logger.info("APScheduler запущен: напоминания активны")
+    
+    # Добавляем ежедневную задачу для проверки неактивных пользователей (каждый день в 9:00)
+    scheduler.add_job(
+        check_inactive_users,
+        IntervalTrigger(hours=24, start_date=datetime.now().replace(hour=9, minute=0, second=0)),
+        args=[bot],
+        id="check_inactive_users",
+        replace_existing=True
+    )
+    
+    logger.info("APScheduler запущен: напоминания и проверка неактивности активны")
+
+
+async def check_inactive_users(bot: Bot):
+    """
+    Проверяет неактивных пользователей (не заходили 14+ дней).
+    Отправляет им одно напоминание о повторном обращении.
+    """
+    cutoff_date = datetime.utcnow() - timedelta(days=14)
+    
+    async with AsyncSessionLocal() as session:
+        # Получаем пользователей, которые не активны 14+ дней
+        # И которым еще не отправляли напоминание о неактивности
+        result = await session.execute(
+            select(User).where(
+                (User.last_activity < cutoff_date) &
+                ((User.last_inactivity_message_sent == None) |
+                 (User.last_inactivity_message_sent < cutoff_date))
+            )
+        )
+        inactive_users = result.scalars().all()
+        
+        sent_count = 0
+        for user in inactive_users:
+            try:
+                await bot.send_message(
+                    chat_id=user.telegram_id,
+                    text=(
+                        "👋 Давно тебя не видели!\n\n"
+                        "Приходи на пилатес — новых ощущений ждём! 🧘‍♀️\n\n"
+                        "Нажми /start чтобы записаться на занятие."
+                    )
+                )
+                user.last_inactivity_message_sent = datetime.utcnow()
+                await session.commit()
+                sent_count += 1
+                logger.info(f"Напоминание о неактивности отправлено пользователю {user.telegram_id}")
+            except Exception as e:
+                logger.error(f"Ошибка при отправке напоминания пользователю {user.telegram_id}: {e}")
+        
+        logger.info(f"Проверка неактивности завершена: напоминания отправлены {sent_count} пользователям")

@@ -17,6 +17,7 @@ class User(Base):
     phone = Column(String(20))
     created_at = Column(DateTime, default=datetime.utcnow)
     last_activity = Column(DateTime, default=datetime.utcnow)
+    last_inactivity_message_sent = Column(DateTime, nullable=True)  # Когда последний раз отправили напоминание о неактивности
 
     bookings = relationship("Booking", back_populates="user")
     subscriptions = relationship("Subscription", back_populates="user")

@@ -15,6 +15,7 @@ from routers import (
     feedback,
     faq,
     admin,
+    trainer,
 )
 from services.scheduler import setup_scheduler
 from utils.logging_config import setup_logging
@@ -49,6 +50,7 @@ async def main() -> None:
     # Подключаем роутеры
     dp.include_router(start.router)
     dp.include_router(booking.router)
+    dp.include_router(trainer.router)  # Маршруты тренеров
     dp.include_router(payments.router)
     dp.include_router(profile.router)
     dp.include_router(feedback.router)
