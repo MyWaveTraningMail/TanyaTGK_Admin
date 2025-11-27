@@ -46,9 +46,9 @@ class Subscription(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.telegram_id"))
-    classes_total = Column(Integer, nullable=False)      # 5 или 10
+    classes_total = Column(Integer, nullable=False)      # 4, 6 или 8 занятий
     classes_left = Column(Integer, nullable=False)
     purchased_at = Column(DateTime, default=datetime.utcnow)
-    expires_at = Column(DateTime, nullable=True)
+    expires_at = Column(DateTime, nullable=True)         # purchased_at + 30 дней
 
     user = relationship("User", back_populates="subscriptions")

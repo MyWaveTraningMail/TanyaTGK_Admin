@@ -6,24 +6,28 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 
-from db.models import User, Booking
+from db.models import User, Booking, Subscription
 from db.database import AsyncSessionLocal
 from keyboards.booking import (
     trainers_keyboard, dates_keyboard, times_keyboard,
     payment_type_keyboard, confirm_booking_keyboard
 )
+from keyboards.lesson_type import lesson_type_keyboard
 from services.google_sheets import (
-    get_available_trainers, get_available_dates, get_available_times
+    get_available_trainers, get_available_dates, get_available_times,
+    log_event_to_sheet
 )
 from services.google_calendar import create_calendar_event
 from services.yookassa import create_payment_link
-from utils.constants import LESSON_TYPES
+from utils.constants import LESSON_TYPES, SBP_PHONE, PAYMENT_MESSAGE
+from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
 router = Router(name="booking_router")
 
 
 class BookingStates(StatesGroup):
+    choosing_lesson_type = State()    # Новое состояние: выбор типа занятия
     choosing_trainer = State()
     choosing_date = State()
     choosing_time = State()
@@ -34,16 +38,55 @@ class BookingStates(StatesGroup):
 # ——— Начало записи ———
 @router.message(F.text == "Записаться на занятие 🧘‍♀️")
 async def start_booking(message: Message, state: FSMContext):
+    """Начинает процесс бронирования с выбора типа занятия."""
+    await state.set_state(BookingStates.choosing_lesson_type)
+    await state.update_data(bookings=[])
+    
+    await log_event_to_sheet(message.from_user.id, "click: Записаться на занятие")
+    
+    await message.answer(
+        "Какой тип занятия тебя интересует?",
+        reply_markup=lesson_type_keyboard()
+    )
+
+
+# ——— Выбор типа занятия ———
+@router.callback_query(BookingStates.choosing_lesson_type, F.data.startswith("lesson_"))
+async def choose_lesson_type(callback: CallbackQuery, state: FSMContext):
+    """Обработчик выбора типа занятия."""
+    lesson_type = callback.data.split("_", 1)[1]  # trial, group_single, group_subscription, individual
+    
+    # Сохраняем тип занятия
+    await state.update_data(lesson_type=lesson_type)
+    
+    # Проверяем, есть ли активный абонемент при выборе group_subscription
+    if lesson_type == "group_subscription":
+        telegram_id = callback.from_user.id
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                select(Subscription).where(
+                    (Subscription.user_id == telegram_id) &
+                    (Subscription.classes_left > 0)
+                )
+            )
+            active_sub = result.scalar_one_or_none()
+        
+        if not active_sub:
+            await callback.answer("❌ У тебя нет активного абонемента!", show_alert=True)
+            return
+    
+    # Переходим к выбору тренера
     trainers = await get_available_trainers()
     if not trainers:
-        await message.answer("😔 Сейчас нет свободных слотов. Попробуй позже!")
+        await callback.message.edit_text("😔 Сейчас нет свободных слотов. Попробуй позже!")
         return
 
     await state.set_state(BookingStates.choosing_trainer)
-    await state.update_data(bookings=[])
-    await message.answer(
+    await callback.message.edit_text(
+        f"Тип: <b>{LESSON_TYPES.get(lesson_type, 'Неизвестный')}</b>\n\n"
         "Выбери тренера:",
-        reply_markup=trainers_keyboard(trainers)
+        reply_markup=trainers_keyboard(trainers),
+        parse_mode="HTML"
     )
 
 
@@ -159,20 +202,32 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext):
     # Создаём событие в календаре тренера (заглушка, реализуем позже)
     await create_calendar_event(booking)
 
-    if data["payment_type"] == "single":
-        payment_url, payment_id = await create_payment_link(
-            amount=data["price"],
-            description=f"Запись на {data['trainer']} {data['date']} {data['time']}",
-            user_id=user_id,
-            booking_id=booking.id
-        )
-        await callback.message.edit_text(
-            f"✅ Запись создана!\nОсталось только оплатить:\n\n{payment_url}",
-            disable_web_page_preview=True
-        )
+    # Обновляем или считаем по абонементу
+    if data["payment_type"] == "subscription" and data.get("lesson_type") == "group_subscription":
+        async with AsyncSessionLocal() as session:
+            sub = await session.execute(
+                select(Subscription).where(Subscription.user_id == user_id)
+            )
+            active_sub = sub.scalar_one_or_none()
+            if active_sub and active_sub.classes_left > 0:
+                active_sub.classes_left -= 1
+                await session.commit()
+        booking.status = "paid"
     else:
-        await callback.message.edit_text(
-            "✅ Запись создана и оплачена абонементом!\nСкоро пришлю напоминание 💪"
-        )
+        booking.status = "pending"
+    
+    await session.commit()
 
+    # Заглушка вместо оплаты через Yookassa (шаг 10.2)
+    await callback.message.edit_text(
+        f"✅ <b>Запись подтверждена!</b>\n\n"
+        f"📅 {booking.date}\n"
+        f"🕐 {booking.time}\n"
+        f"👨‍🏫 {booking.trainer}\n\n"
+        f"<b>Оплата:</b>\n{PAYMENT_MESSAGE}\n"
+        f"После перевода кликни <code>Я оплатил(а)</code> или напиши админу! ✅",
+        parse_mode="HTML"
+    )
+
+    await log_event_to_sheet(user_id, f"booking: {booking.trainer} {booking.date} {booking.time}")
     await state.clear()
