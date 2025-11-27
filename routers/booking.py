@@ -149,6 +149,7 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext):
             time=data["time"],
             price=data["price"],
             payment_type=data["payment_type"],
+            lesson_type=data.get("lesson_type", "group_single"),  # Тип занятия
             status="pending"
         )
         session.add(booking)

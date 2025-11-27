@@ -40,6 +40,21 @@ async def cmd_start(message: Message, state: FSMContext):
     )
 
 
+@router.message(F.text == "Начать 🚀")
+async def start_button(message: Message, state: FSMContext):
+    await state.clear()
+    await register_user_if_not_exists(
+        telegram_id=message.from_user.id,
+        full_name=message.from_user.full_name,
+        username=message.from_user.username,
+    )
+    await message.answer(
+        WELCOME_TEXT,
+        reply_markup=get_main_menu(),
+        disable_web_page_preview=True,
+    )
+
+
 @router.message(F.text == "◀️ В главное меню")
 async def back_to_main_menu(message: Message, state: FSMContext):
     await state.clear()

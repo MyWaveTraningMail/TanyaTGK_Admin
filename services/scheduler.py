@@ -7,7 +7,7 @@ from apscheduler.triggers.date import DateTrigger
 
 from db.models import Booking
 from db.database import AsyncSessionLocal
-from utils.constants import REMINDER_24H, REMINDER_2H
+from utils.constants import REMINDER_12H, REMINDER_2H
 
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler(timezone="Europe/Moscow")
@@ -28,17 +28,24 @@ async def send_reminder(bot: Bot, booking: Booking, text: str, buttons: list):
 
 
 async def schedule_reminders(bot: Bot, booking: Booking):
+    """
+    Планирует напоминания за 12 и 2 часа до начала занятия.
+    
+    Args:
+        bot: Экземпляр aiogram Bot
+        booking: Объект бронирования
+    """
     lesson_dt = datetime.strptime(f"{booking.date} {booking.time}", "%d %B %Y %H:%M")
     
-    reminder_24 = lesson_dt - timedelta(hours=24)
+    reminder_12 = lesson_dt - timedelta(hours=12)
     reminder_2 = lesson_dt - timedelta(hours=2)
 
-    if reminder_24 > datetime.now():
+    if reminder_12 > datetime.now():
         scheduler.add_job(
-            send_24h_reminder,
-            DateTrigger(run_date=reminder_24),
+            send_12h_reminder,
+            DateTrigger(run_date=reminder_12),
             args=[bot, booking.id],
-            id=f"reminder_24h_{booking.id}",
+            id=f"reminder_12h_{booking.id}",
             replace_existing=True
         )
 
@@ -52,12 +59,13 @@ async def schedule_reminders(bot: Bot, booking: Booking):
         )
 
 
-async def send_24h_reminder(bot: Bot, booking_id: int):
+async def send_12h_reminder(bot: Bot, booking_id: int):
+    """Отправляет напоминание за 12 часов до занятия."""
     async with AsyncSessionLocal() as session:
         booking = await session.get(Booking, booking_id)
         if not booking or booking.status in ["cancelled", "done"]:
             return
-        booking.reminder_24_sent = True
+        booking.reminder_12_sent = True
         await session.commit()
 
         buttons = [
@@ -65,7 +73,12 @@ async def send_24h_reminder(bot: Bot, booking_id: int):
             [InlineKeyboardButton(text="🔄 Перенести", callback_data=f"reschedule_{booking.id}")],
             [InlineKeyboardButton(text="❌ Отменить", callback_data=f"cancel_{booking.id}")]
         ]
-        await send_reminder(bot, booking, REMINDER_24H, buttons)
+        await send_reminder(bot, booking, REMINDER_12H, buttons)
+
+
+async def send_24h_reminder(bot: Bot, booking_id: int):
+    """Отправляет напоминание за 12 часов до занятия (старое имя, для совместимости)."""
+    await send_12h_reminder(bot, booking_id)
 
 
 async def send_2h_reminder(bot: Bot, booking_id: int):

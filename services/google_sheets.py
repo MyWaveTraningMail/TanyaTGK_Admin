@@ -120,3 +120,58 @@ async def get_faq_answers() -> list[tuple[str, str]]:
     except Exception as e:
         logger.error(f"Ошибка чтения FAQ: {e}")
         return []
+
+
+async def update_free_slots(row_index: int, delta: int) -> bool:
+    """
+    Изменяет количество свободных мест в слоте на +/- delta.
+    
+    Args:
+        row_index: Номер строки в листе Schedule (1-based индексация для Sheets API)
+        delta: Дельта изменения (-1 при броне, +1 при отмене)
+    
+    Returns:
+        True, если успешно, False в случае ошибки
+    """
+    try:
+        client = _get_client()
+        sheet = client.open_by_key(GOOGLE_SHEET_ID).worksheet("Schedule")
+        
+        # Получаем текущее значение
+        cell = sheet.cell(row_index, col=5)  # Столбец "Свободно" (примерно 5-й)
+        current = int(cell.value or 0)
+        new_value = max(0, current + delta)
+        
+        # Обновляем значение
+        sheet.update_cell(row_index, 5, new_value)
+        logger.info(f"Обновлены свободные места: строка {row_index}, было {current}, стало {new_value}")
+        return True
+    except Exception as e:
+        logger.error(f"Ошибка обновления свободных мест: {e}")
+        return False
+
+
+async def log_event_to_sheet(telegram_id: int, action_text: str) -> bool:
+    """
+    Логирует действие пользователя в лист Events.
+    
+    Args:
+        telegram_id: Telegram ID пользователя
+        action_text: Текст действия (например, "click: Записаться на занятие")
+    
+    Returns:
+        True, если успешно, False в случае ошибки
+    """
+    try:
+        client = _get_client()
+        sheet = client.open_by_key(GOOGLE_SHEET_ID).worksheet("Events")
+        
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Добавляем новую строку: Telegram ID, Время, Действие
+        sheet.append_row([telegram_id, timestamp, action_text])
+        logger.debug(f"Логировано действие: {telegram_id} — {action_text}")
+        return True
+    except Exception as e:
+        logger.error(f"Ошибка логирования действия: {e}")
+        return False

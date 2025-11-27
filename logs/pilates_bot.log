@@ -747,3 +747,17 @@ sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) UNIQUE constraint failed
 2025-11-26 10:33:03,533 - aiogram.event - INFO - Update id=23846926 is handled. Duration 454 ms by bot id=8213931908
 2025-11-26 10:34:13,662 - services.google_sheets - ERROR - Ошибка чтения тренеров из Google Sheets: <Response [404]>
 2025-11-26 10:34:13,967 - aiogram.event - INFO - Update id=23846927 is handled. Duration 537 ms by bot id=8213931908
+2025-11-27 08:15:49,237 - __main__ - INFO - Запуск бота в режиме polling...
+2025-11-27 08:15:49,242 - db.database - INFO - База данных инициализирована (SQLite)
+2025-11-27 08:15:49,243 - apscheduler.scheduler - INFO - Scheduler started
+2025-11-27 08:15:49,243 - services.scheduler - INFO - APScheduler запущен: напоминания активны
+2025-11-27 08:15:49,569 - __main__ - INFO - Бот запущен и готов к работе
+2025-11-27 08:15:49,569 - aiogram.dispatcher - INFO - Start polling
+2025-11-27 08:15:49,664 - aiogram.dispatcher - INFO - Run polling for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
+2025-11-27 08:46:30,051 - aiogram.event - INFO - Update id=23846928 is handled. Duration 338 ms by bot id=8213931908
+2025-11-27 08:46:58,269 - services.google_sheets - ERROR - Ошибка чтения тренеров из Google Sheets: <Response [404]>
+2025-11-27 08:46:58,571 - aiogram.event - INFO - Update id=23846929 is handled. Duration 567 ms by bot id=8213931908
+2025-11-27 08:47:02,995 - services.google_sheets - ERROR - Ошибка чтения FAQ: <Response [404]>
+2025-11-27 08:47:03,158 - aiogram.event - INFO - Update id=23846930 is handled. Duration 366 ms by bot id=8213931908
+2025-11-27 08:47:09,234 - aiogram.event - INFO - Update id=23846931 is handled. Duration 153 ms by bot id=8213931908
+2025-11-27 08:47:12,003 - aiogram.event - INFO - Update id=23846932 is handled. Duration 128 ms by bot id=8213931908

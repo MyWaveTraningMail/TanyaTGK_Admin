@@ -28,14 +28,15 @@ class Booking(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.telegram_id"))
     trainer = Column(String(50), nullable=False)
-    date = Column(String(10), nullable=False)           # YYYY-MM-DD
+    date = Column(String(50), nullable=False)           # "15 марта 2025" (human-readable format)
     time = Column(String(5), nullable=False)            # HH:MM
     price = Column(Integer, nullable=False)
     payment_type = Column(String(20), default="single") # single / subscription
-    status = Column(String(20), default="pending")      # pending, paid, done, cancelled, noshow
+    status = Column(String(20), default="pending")      # pending, paid, done, cancelled, late_cancel
+    lesson_type = Column(String(20), default="group_single")  # trial, group_single, group_subscription, individual
     created_at = Column(DateTime, default=datetime.utcnow)
-    reminder_24_sent = Column(Boolean, default=False)
-    reminder_2_sent = Column(Boolean, default=False)
+    reminder_12_sent = Column(Boolean, default=False)   # 12 hours before
+    reminder_2_sent = Column(Boolean, default=False)    # 2 hours before
 
     user = relationship("User", back_populates="bookings")
 
