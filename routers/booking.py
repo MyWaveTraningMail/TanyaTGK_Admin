@@ -20,6 +20,7 @@ from services.google_sheets import (
 from services.google_calendar import create_calendar_event
 from services.yookassa import create_payment_link
 from utils.constants import LESSON_TYPES, SBP_PHONE, PAYMENT_MESSAGE
+from utils.helpers import hours_to_lesson, update_user_activity
 from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
@@ -39,10 +40,15 @@ class BookingStates(StatesGroup):
 @router.message(F.text == "Записаться на занятие 🧘‍♀️")
 async def start_booking(message: Message, state: FSMContext):
     """Начинает процесс бронирования с выбора типа занятия."""
+    user_id = message.from_user.id
+    
+    # Обновляем активность пользователя
+    await update_user_activity(user_id)
+    
     await state.set_state(BookingStates.choosing_lesson_type)
     await state.update_data(bookings=[])
     
-    await log_event_to_sheet(message.from_user.id, "click: Записаться на занятие")
+    await log_event_to_sheet(user_id, "click: Записаться на занятие")
     
     await message.answer(
         "Какой тип занятия тебя интересует?",

@@ -4,6 +4,7 @@ from aiogram.types import Message
 from db.database import AsyncSessionLocal
 from db.models import Booking, Subscription
 from services.google_sheets import log_event_to_sheet
+from utils.helpers import update_user_activity
 from sqlalchemy import select
 
 router = Router(name="profile_router")
@@ -13,6 +14,9 @@ router = Router(name="profile_router")
 async def my_bookings(message: Message):
     """Показывает все бронирования пользователя"""
     telegram_id = message.from_user.id
+    
+    # Обновляем активность пользователя
+    await update_user_activity(telegram_id)
     
     # Логируем событие
     await log_event_to_sheet(telegram_id, "click: Мои занятия")
@@ -39,6 +43,9 @@ async def my_bookings(message: Message):
 async def my_subscriptions(message: Message):
     """Показывает активные абонементы пользователя"""
     telegram_id = message.from_user.id
+    
+    # Обновляем активность пользователя
+    await update_user_activity(telegram_id)
     
     # Логируем событие
     await log_event_to_sheet(telegram_id, "click: Мои абонементы")

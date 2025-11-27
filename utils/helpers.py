@@ -10,6 +10,34 @@ def format_price(amount: int) -> str:
     return f"{amount} ₽"
 
 
+async def update_user_activity(user_id: int) -> None:
+    """
+    Обновляет время последней активности пользователя.
+    Используется для отслеживания неактивных пользователей (шаг 11).
+    
+    Args:
+        user_id: Telegram ID пользователя
+    """
+    from db.models import User
+    from db.database import AsyncSessionLocal
+    from sqlalchemy import select
+    
+    try:
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                select(User).where(User.telegram_id == user_id)
+            )
+            user = result.scalar_one_or_none()
+            
+            if user:
+                user.last_activity = datetime.utcnow()
+                await session.commit()
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Ошибка при обновлении last_activity для {user_id}: {e}")
+
+
 def hours_to_lesson(booking: "Booking") -> float:
     """
     Вычисляет количество часов до начала занятия.

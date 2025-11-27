@@ -7,6 +7,7 @@ from db.models import User
 from db.database import AsyncSessionLocal
 from keyboards.main_menu import get_main_menu
 from utils.constants import WELCOME_TEXT
+from utils.helpers import update_user_activity
 from config import TRAINER_CHAT_IDS
 from services.google_sheets import log_event_to_sheet
 
@@ -40,6 +41,9 @@ async def cmd_start(message: Message, state: FSMContext):
         full_name=message.from_user.full_name,
         username=message.from_user.username,
     )
+    
+    # Обновляем активность пользователя
+    await update_user_activity(telegram_id)
     
     # Логируем событие
     await log_event_to_sheet(telegram_id, "message: /start")
