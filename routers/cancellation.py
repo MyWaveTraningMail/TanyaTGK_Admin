@@ -65,9 +65,11 @@ async def cancel_booking(callback: CallbackQuery):
                 booking.status = "late_cancel"  # Поздняя отмена
                 await session.commit()
                 
-                # Возвращаем место в Sheets если был row_index
+                # Возвращаем место в Sheets (slot-logic-update.md п.4.2)
+                # НЕ МЕНЯЕМ ТИП СЛОТА! Слот остаётся привязанным к типу первого клиента
                 if hasattr(booking, 'row_index'):
                     await update_free_slots(booking.row_index, delta=+1)
+                    logger.info(f"Поздняя отмена: возвращено место, тип слота НЕ изменился (booking_id={booking.id})")
                 
                 await log_event_to_sheet(
                     telegram_id, 
@@ -123,9 +125,11 @@ async def cancel_booking(callback: CallbackQuery):
         
         await session.commit()
         
-        # Возвращаем место в Sheets
+        # Возвращаем место в Sheets (slot-logic-update.md п.4.1)
+        # ВАЖНО: НЕ МЕНЯЕМ ТИП СЛОТА! Слот остаётся привязанным к типу первого клиента
         if hasattr(booking, 'row_index'):
             await update_free_slots(booking.row_index, delta=+1)
+            logger.info(f"Отмена: возвращено место в слот, тип слота НЕ изменился (booking_id={booking.id})")
         
         await log_event_to_sheet(
             telegram_id, 

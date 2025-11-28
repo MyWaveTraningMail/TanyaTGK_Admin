@@ -41,7 +41,13 @@ def times_keyboard(times: list[dict], trainer: str, date_str: str) -> InlineKeyb
         time = slot["time"]
         free = slot["free"]
         price = slot["price"]
-        text = f"{time} • {free} мест(а) • {price} ₽"
+        
+        # Визуальный формат с остатком мест: "10:00 (осталось 2 из 3) • 1000 ₽"
+        # Используем стандартное количество мест в слоте (обычно 3 для групп, 2 для индивидуальных)
+        total_slots = 3 if slot.get("lesson_type") == "group_single" else 2
+        remaining_text = f"({free} из {total_slots})"
+        
+        text = f"{time} {remaining_text} • {price} ₽"
         builder.row(
             InlineKeyboardButton(
                 text=text,

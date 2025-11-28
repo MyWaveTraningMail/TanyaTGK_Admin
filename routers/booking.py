@@ -121,10 +121,15 @@ async def choose_date(callback: CallbackQuery, state: FSMContext):
     _, trainer, pretty_date = callback.data.split("_", 2)
     data = await state.get_data()
     trainer = data.get("trainer", trainer)
+    lesson_type = data.get("lesson_type")  # Получаем выбранный тип занятия
 
-    times = await get_available_times(trainer, pretty_date)
+    # Фильтруем слоты по типу (slot-logic-update.md п.3.2)
+    times = await get_available_times(trainer, pretty_date, lesson_type=lesson_type)
     if not times:
-        await callback.message.edit_text("На эту дату нет свободного времени 😔")
+        await callback.message.edit_text(
+            f"На выбранную дату нет подходящих слотов для этого типа занятия.\n"
+            f"Выбери другую дату или другой тип."
+        )
         return
 
     await state.update_data(date=pretty_date, raw_date=pretty_date.split("|")[0].strip())
@@ -142,12 +147,22 @@ async def choose_time(callback: CallbackQuery, state: FSMContext):
     _, trainer, date_str, time, price = callback.data.split("_", 4)
     price = int(price)
 
+    # Получаем row_index из данных о слоте (нужен для обновления типа в Google Sheets)
+    data = await state.get_data()
+    times = await get_available_times(trainer, date_str, lesson_type=data.get("lesson_type"))
+    slot_row_index = None
+    for slot in times:
+        if slot["time"] == time:
+            slot_row_index = slot.get("row_index")
+            break
+
     await state.update_data(
         trainer=trainer,
         date=date_str,
         time=time,
         price=price,
-        slot_price=price
+        slot_price=price,
+        row_index=slot_row_index  # Сохраняем индекс строки для обновления типа
     )
 
     await state.set_state(BookingStates.choosing_payment)
@@ -189,13 +204,8 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     user_id = callback.from_user.id
 
-    # Получаем тип занятия из Google Sheets
-    lesson_type_from_sheet = await get_lesson_type_from_sheet(
-        data["trainer"],
-        data["date"].split("|")[0].strip(),
-        data["time"]
-    )
-    lesson_type = data.get("lesson_type", lesson_type_from_sheet)
+    # Получаем тип занятия из выбранного клиентом (сохранён в FSM)
+    lesson_type = data.get("lesson_type", "group_single")
 
     # Сохраняем в БД
     async with AsyncSessionLocal() as session:
@@ -206,21 +216,27 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext):
             time=data["time"],
             price=data["price"],
             payment_type=data["payment_type"],
-            lesson_type=lesson_type,  # Тип занятия из Sheets или выбранный
+            lesson_type=lesson_type,
             status="pending"
         )
         session.add(booking)
         await session.commit()
         await session.refresh(booking)
 
-    # Обновляем свободные места в Google Sheets (шаг 3.2)
+    # Логика: при первом бронировании слота (когда тип был пустой) — записываем тип в Google Sheets
+    # (slot-logic-update.md п.3.3)
+    if "row_index" in data and data["row_index"]:
+        await update_lesson_type(data["row_index"], lesson_type)
+        logger.info(f"Обновлен тип слота: row_index={data['row_index']}, lesson_type={lesson_type}")
+
+    # Обновляем свободные места в Google Sheets
     if "row_index" in data:
         await update_free_slots(data["row_index"], delta=-1)
 
-    # Создаём событие в календаре тренера (заглушка, реализуем позже)
+    # Создаём событие в календаре тренера
     await create_calendar_event(booking)
 
-    # Обновляем или считаем по абонементу
+    # Обновляем абонемент, если выбрана подписка
     if data["payment_type"] == "subscription" and lesson_type == "group_subscription":
         async with AsyncSessionLocal() as session:
             sub = await session.execute(
@@ -238,7 +254,7 @@ async def confirm_booking(callback: CallbackQuery, state: FSMContext):
         await session.merge(booking)
         await session.commit()
 
-    # Заглушка вместо оплаты через Yookassa (шаг 10.2)
+    # Выводим подтверждение
     await callback.message.edit_text(
         f"✅ <b>Запись подтверждена!</b>\n\n"
         f"📅 {booking.date}\n"

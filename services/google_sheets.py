@@ -255,8 +255,15 @@ async def get_available_times(trainer: str, date_str: str, lesson_type: str = No
                 if row_date.day == target_day and row_date.month == target_month:
                     free = int(row.get("Свободно", 0))
                     
-                    row_lesson_type = row.get("Типтренировки", "").lower()
-                    if lesson_type and row_lesson_type != lesson_type.lower():
+                    # Логика фильтрации по типу (slot-logic-update.md п.3.2)
+                    # Показываем слот если:
+                    # 1. Свободно > 0
+                    # 2. Типтренировки пустой (первое бронирование) ИЛИ совпадает с выбранным типом
+                    row_lesson_type = row.get("Типтренировки", "").strip().lower()
+                    
+                    # Если слот имеет тип и он не совпадает с выбранным — пропускаем слот
+                    if row_lesson_type and lesson_type and row_lesson_type != lesson_type.lower():
+                        logger.debug(f"Пропуск слота: тип '{row_lesson_type}' не совпадает с '{lesson_type}'")
                         continue
                     
                     if free > 0:
