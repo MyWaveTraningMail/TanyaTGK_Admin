@@ -984,3 +984,25 @@ WHERE bookings.user_id = ? ORDER BY bookings.date DESC]
 2025-11-28 13:06:04,298 - aiogram.dispatcher - WARNING - Received SIGINT signal
 2025-11-28 13:06:04,299 - aiogram.dispatcher - INFO - Polling stopped for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
 2025-11-28 13:06:04,299 - aiogram.dispatcher - INFO - Polling stopped
+2025-11-28 13:10:07,119 - __main__ - INFO - Запуск бота в режиме polling...
+2025-11-28 13:10:07,123 - db.database - INFO - База данных инициализирована (SQLite)
+2025-11-28 13:10:07,124 - apscheduler.scheduler - INFO - Scheduler started
+2025-11-28 13:10:07,125 - apscheduler.scheduler - INFO - Added job "check_inactive_users" to job store "default"
+2025-11-28 13:10:07,126 - services.scheduler - INFO - APScheduler запущен: напоминания и проверка неактивности активны
+2025-11-28 13:10:07,440 - __main__ - INFO - Бот запущен и готов к работе
+2025-11-28 13:10:07,440 - aiogram.dispatcher - INFO - Start polling
+2025-11-28 13:10:07,527 - aiogram.dispatcher - INFO - Run polling for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
+2025-11-28 13:10:13,754 - aiogram.dispatcher - WARNING - Received SIGTERM signal
+2025-11-28 13:10:13,755 - aiogram.dispatcher - INFO - Polling stopped for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
+2025-11-28 13:10:13,755 - aiogram.dispatcher - INFO - Polling stopped
+2025-11-28 13:10:28,592 - __main__ - INFO - Запуск бота в режиме polling...
+2025-11-28 13:10:28,596 - db.database - INFO - База данных инициализирована (SQLite)
+2025-11-28 13:10:28,597 - apscheduler.scheduler - INFO - Scheduler started
+2025-11-28 13:10:28,599 - apscheduler.scheduler - INFO - Added job "check_inactive_users" to job store "default"
+2025-11-28 13:10:28,599 - services.scheduler - INFO - APScheduler запущен: напоминания и проверка неактивности активны
+2025-11-28 13:10:28,933 - __main__ - INFO - Бот запущен и готов к работе
+2025-11-28 13:10:28,934 - aiogram.dispatcher - INFO - Start polling
+2025-11-28 13:10:29,020 - aiogram.dispatcher - INFO - Run polling for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
+2025-11-28 13:10:33,315 - aiogram.dispatcher - WARNING - Received SIGTERM signal
+2025-11-28 13:10:33,316 - aiogram.dispatcher - INFO - Polling stopped for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
+2025-11-28 13:10:33,316 - aiogram.dispatcher - INFO - Polling stopped
