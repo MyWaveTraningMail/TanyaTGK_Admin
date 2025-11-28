@@ -84,7 +84,7 @@ async def get_available_dates(trainer: str, days_ahead: int = 30) -> List[str]:
     """Возвращает список дат в формате '15 марта|пт' для красивых кнопок"""
     try:
         client = _get_client()
-            sheet = _open_worksheet("Schedule")
+        sheet = client.open_by_key(GOOGLE_SHEET_ID).worksheet("Schedule")
         records = sheet.get_all_records()
 
         result = []
@@ -126,7 +126,7 @@ async def get_available_times(trainer: str, date_str: str, lesson_type: str = No
     """
     try:
         client = _get_client()
-            sheet = _open_worksheet("Schedule")
+        sheet = _open_worksheet("Schedule")
         all_records = sheet.get_all_records()
 
         target_day = int(date_str.split()[0])
@@ -165,7 +165,7 @@ async def get_available_times(trainer: str, date_str: str, lesson_type: str = No
 async def get_faq_answers() -> list[tuple[str, str]]:
     try:
         client = _get_client()
-            sheet = _open_worksheet("FAQ")
+        sheet = _open_worksheet("FAQ")
         records = sheet.get_all_records()
         return [(row["Вопрос"], row["Ответ"]) for row in records if row.get("Вопрос") and row.get("Ответ")]
     except Exception as e:
@@ -186,7 +186,7 @@ async def update_free_slots(row_index: int, delta: int) -> bool:
     """
     try:
         client = _get_client()
-            sheet = _open_worksheet("Schedule")
+        sheet = _open_worksheet("Schedule")
         
         # Находим столбец "Свободно"
         headers = sheet.row_values(1)
@@ -220,7 +220,7 @@ async def get_lesson_type_from_sheet(trainer: str, date_str: str, time_str: str)
     """
     try:
         client = _get_client()
-            sheet = _open_worksheet("Schedule")
+        sheet = _open_worksheet("Schedule")
         all_records = sheet.get_all_records()
 
         target_day = int(date_str.split()[0])
@@ -256,7 +256,7 @@ async def update_lesson_type(row_index: int, lesson_type: str) -> bool:
     """
     try:
         client = _get_client()
-            sheet = _open_worksheet("Schedule")
+        sheet = _open_worksheet("Schedule")
         
         headers = sheet.row_values(1)
         lesson_type_col = headers.index("Типтренировки") + 1 if "Типтренировки" in headers else 6
@@ -282,7 +282,7 @@ async def log_event_to_sheet(telegram_id: int, action_text: str) -> bool:
     """
     try:
         client = _get_client()
-            sheet = _open_worksheet("Events")
+        sheet = _open_worksheet("Events")
         
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         

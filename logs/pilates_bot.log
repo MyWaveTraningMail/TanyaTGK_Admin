@@ -957,3 +957,14 @@ WHERE bookings.user_id = ? ORDER BY bookings.date DESC]
 2025-11-28 11:52:00,093 - aiogram.dispatcher - WARNING - Received SIGINT signal
 2025-11-28 11:52:00,094 - aiogram.dispatcher - INFO - Polling stopped for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
 2025-11-28 11:52:00,094 - aiogram.dispatcher - INFO - Polling stopped
+2025-11-28 12:58:04,402 - __main__ - INFO - Запуск бота в режиме polling...
+2025-11-28 12:58:04,407 - db.database - INFO - База данных инициализирована (SQLite)
+2025-11-28 12:58:04,408 - apscheduler.scheduler - INFO - Scheduler started
+2025-11-28 12:58:04,414 - apscheduler.scheduler - INFO - Added job "check_inactive_users" to job store "default"
+2025-11-28 12:58:04,414 - services.scheduler - INFO - APScheduler запущен: напоминания и проверка неактивности активны
+2025-11-28 12:58:04,868 - __main__ - INFO - Бот запущен и готов к работе
+2025-11-28 12:58:04,868 - aiogram.dispatcher - INFO - Start polling
+2025-11-28 12:58:04,955 - aiogram.dispatcher - INFO - Run polling for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
+2025-11-28 12:58:06,051 - aiogram.dispatcher - WARNING - Received SIGTERM signal
+2025-11-28 12:58:06,051 - aiogram.dispatcher - INFO - Polling stopped for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
+2025-11-28 12:58:06,052 - aiogram.dispatcher - INFO - Polling stopped
