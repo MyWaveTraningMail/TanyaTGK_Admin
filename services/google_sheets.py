@@ -33,6 +33,21 @@ def _open_worksheet(title: str):
 
     Бросает исключение дальше, чтобы вызывающий код мог обработать ошибку.
     """
+    # Проверяем валидность GOOGLE_SHEET_ID
+    if not GOOGLE_SHEET_ID or GOOGLE_SHEET_ID.startswith("1aBcDeFgHiJkLmNoPqRsTuVwXyZ"):
+        logger.error(
+            f"⚠️ КРИТИЧЕСКАЯ ОШИБКА: GOOGLE_SHEET_ID содержит тестовый ID '{GOOGLE_SHEET_ID}'.\n"
+            f"Для использования бота необходимо:\n"
+            f"1. Создать Google Sheet: https://sheets.google.com/create\n"
+            f"2. Скопировать ID из URL (находится между /d/ и /edit)\n"
+            f"3. Установить GOOGLE_SHEET_ID в .env файле\n"
+            f"4. Поделиться доступом к таблице с сервисным аккаунтом"
+        )
+        raise ValueError(
+            f"GOOGLE_SHEET_ID не установлен корректно. Это тестовый ID. "
+            f"Установите реальный ID из вашей Google Sheets таблицы в файл .env"
+        )
+    
     try:
         client = _get_client()
     except FileNotFoundError as e:
@@ -75,9 +90,12 @@ async def get_available_trainers() -> List[str]:
             if int(row.get("Свободно", 0)) > 0
         }
         return sorted(list(trainers))
+    except ValueError as e:
+        logger.warning(f"⚠️ {e}")
+        return []  # Возвращаем пустой список вместо краша
     except Exception as e:
         logger.error(f"Ошибка чтения тренеров из Google Sheets: {e}")
-        return []
+        return []  # Graceful degradation - возвращаем пустой список
 
 
 async def get_available_dates(trainer: str, days_ahead: int = 30) -> List[str]:
@@ -281,6 +299,10 @@ async def log_event_to_sheet(telegram_id: int, action_text: str) -> bool:
         True, если успешно, False в случае ошибки
     """
     try:
+        if not GOOGLE_SHEET_ID or GOOGLE_SHEET_ID.startswith("1aBcDeFgHiJkLmNoPqRsTuVwXyZ"):
+            logger.debug(f"Логирование пропущено: GOOGLE_SHEET_ID не установлен корректно (тестовый ID)")
+            return False
+        
         client = _get_client()
         sheet = _open_worksheet("Events")
         
@@ -290,6 +312,9 @@ async def log_event_to_sheet(telegram_id: int, action_text: str) -> bool:
         sheet.append_row([telegram_id, timestamp, action_text])
         logger.debug(f"Логировано действие: {telegram_id} — {action_text}")
         return True
-    except Exception as e:
-        logger.error(f"Ошибка логирования действия: {e}")
+    except ValueError as e:
+        logger.debug(f"⚠️ Google Sheets недоступен: {e}")
         return False
+    except Exception as e:
+        logger.debug(f"Ошибка логирования действия (некритично): {e}")
+        return False  # Логирование не должно ломать основной функционал

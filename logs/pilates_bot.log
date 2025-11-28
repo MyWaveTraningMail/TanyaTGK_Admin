@@ -968,3 +968,19 @@ WHERE bookings.user_id = ? ORDER BY bookings.date DESC]
 2025-11-28 12:58:06,051 - aiogram.dispatcher - WARNING - Received SIGTERM signal
 2025-11-28 12:58:06,051 - aiogram.dispatcher - INFO - Polling stopped for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
 2025-11-28 12:58:06,052 - aiogram.dispatcher - INFO - Polling stopped
+2025-11-28 13:00:54,234 - __main__ - INFO - Запуск бота в режиме polling...
+2025-11-28 13:00:54,239 - db.database - INFO - База данных инициализирована (SQLite)
+2025-11-28 13:00:54,239 - apscheduler.scheduler - INFO - Scheduler started
+2025-11-28 13:00:54,241 - apscheduler.scheduler - INFO - Added job "check_inactive_users" to job store "default"
+2025-11-28 13:00:54,242 - services.scheduler - INFO - APScheduler запущен: напоминания и проверка неактивности активны
+2025-11-28 13:00:54,665 - __main__ - INFO - Бот запущен и готов к работе
+2025-11-28 13:00:54,665 - aiogram.dispatcher - INFO - Start polling
+2025-11-28 13:00:54,759 - aiogram.dispatcher - INFO - Run polling for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
+2025-11-28 13:00:55,198 - services.google_sheets - ERROR - Google Sheet с ID '1aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789' не найден. Проверьте переменную GOOGLE_SHEET_ID и доступ сервисного аккаунта.
+2025-11-28 13:00:55,198 - services.google_sheets - ERROR - Ошибка логирования действия: <Response [404]>
+2025-11-28 13:00:55,515 - aiogram.event - INFO - Update id=23846940 is handled. Duration 650 ms by bot id=8213931908
+2025-11-28 13:01:01,924 - services.google_sheets - ERROR - Ошибка чтения тренеров из Google Sheets: <Response [404]>
+2025-11-28 13:01:02,043 - aiogram.event - INFO - Update id=23846941 is handled. Duration 582 ms by bot id=8213931908
+2025-11-28 13:06:04,298 - aiogram.dispatcher - WARNING - Received SIGINT signal
+2025-11-28 13:06:04,299 - aiogram.dispatcher - INFO - Polling stopped for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
+2025-11-28 13:06:04,299 - aiogram.dispatcher - INFO - Polling stopped
