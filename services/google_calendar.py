@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 
-from config import GOOGLE_SERVICE_ACCOUNT_FILE
+from config import GOOGLE_SERVICE_ACCOUNT_FILE, TIMEZONE
 
 logger = logging.getLogger(__name__)
 SCOPES = ['https://www.googleapis.com/auth/calendar']
@@ -42,11 +42,11 @@ async def create_calendar_event(booking) -> bool:
             'description': f'Telegram: @{booking.user.telegram_id}\nОплата: {booking.payment_type}',
             'start': {
                 'dateTime': start_time.isoformat(),
-                'timeZone': 'Europe/Moscow',
+                'timeZone': TIMEZONE,
             },
             'end': {
                 'dateTime': end_time.isoformat(),
-                'timeZone': 'Europe/Moscow',
+                'timeZone': TIMEZONE,
             },
             'attendees': [],
             'reminders': {

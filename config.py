@@ -11,7 +11,7 @@ YOO_KASSA_SHOP_ID: str = os.getenv("YOO_KASSA_SHOP_ID", "")
 YOO_KASSA_SECRET_KEY: str = os.getenv("YOO_KASSA_SECRET_KEY", "")
 
 ADMIN_CHAT_ID: int = int(os.getenv("ADMIN_CHAT_ID", "0"))
-TIMEZONE: str = os.getenv("TIMEZONE", "Europe/Moscow")
+TIMEZONE: str = os.getenv("TIMEZONE", "Europe/Samara")
 
 # Чаты тренеров
 TRAINER_CHAT_IDS = {

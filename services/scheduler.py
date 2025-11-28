@@ -1,18 +1,20 @@
 import logging
 from datetime import datetime, timedelta
+import pytz
 
 from aiogram import Bot
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
+from config import TIMEZONE
 from db.models import Booking, User
 from db.database import AsyncSessionLocal
 from utils.constants import REMINDER_12H, REMINDER_2H
 from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
-scheduler = AsyncIOScheduler(timezone="Europe/Moscow")
+scheduler = AsyncIOScheduler(timezone=TIMEZONE)
 
 
 async def send_reminder(bot: Bot, booking: Booking, text: str, buttons: list):
@@ -37,12 +39,21 @@ async def schedule_reminders(bot: Bot, booking: Booking):
         bot: Экземпляр aiogram Bot
         booking: Объект бронирования
     """
-    lesson_dt = datetime.strptime(f"{booking.date} {booking.time}", "%d %B %Y %H:%M")
+    # Парсируем дату и время занятия
+    lesson_dt_naive = datetime.strptime(f"{booking.date} {booking.time}", "%d %B %Y %H:%M")
     
+    # Делаем datetime timezone-aware в зоне TIMEZONE
+    tz = pytz.timezone(TIMEZONE)
+    lesson_dt = tz.localize(lesson_dt_naive)
+    
+    # Рассчитываем время напоминаний
     reminder_12 = lesson_dt - timedelta(hours=12)
     reminder_2 = lesson_dt - timedelta(hours=2)
 
-    if reminder_12 > datetime.now():
+    # Получаем текущее время в TIMEZONE
+    now_tz = datetime.now(tz=tz)
+
+    if reminder_12 > now_tz:
         scheduler.add_job(
             send_12h_reminder,
             DateTrigger(run_date=reminder_12),
@@ -50,8 +61,9 @@ async def schedule_reminders(bot: Bot, booking: Booking):
             id=f"reminder_12h_{booking.id}",
             replace_existing=True
         )
+        logger.debug(f"Запланировано напоминание за 12ч: booking {booking.id}, время {reminder_12}")
 
-    if reminder_2 > datetime.now():
+    if reminder_2 > now_tz:
         scheduler.add_job(
             send_2h_reminder,
             DateTrigger(run_date=reminder_2),
@@ -59,6 +71,7 @@ async def schedule_reminders(bot: Bot, booking: Booking):
             id=f"reminder_2h_{booking.id}",
             replace_existing=True
         )
+        logger.debug(f"Запланировано напоминание за 2ч: booking {booking.id}, время {reminder_2}")
 
 
 async def send_12h_reminder(bot: Bot, booking_id: int):
@@ -96,19 +109,23 @@ async def send_2h_reminder(bot: Bot, booking_id: int):
 
 
 async def setup_scheduler(bot: Bot):
-    """Инициализирует планировщик задач"""
+    """Инициализирует планировщик задач с поддержкой TIMEZONE"""
     scheduler.start()
     
     # Добавляем ежедневную задачу для проверки неактивных пользователей (каждый день в 9:00)
+    # Используем timezone-aware datetime
+    tz = pytz.timezone(TIMEZONE)
+    start_date = datetime.now(tz=tz).replace(hour=9, minute=0, second=0, microsecond=0)
+    
     scheduler.add_job(
         check_inactive_users,
-        IntervalTrigger(hours=24, start_date=datetime.now().replace(hour=9, minute=0, second=0)),
+        IntervalTrigger(hours=24, start_date=start_date),
         args=[bot],
         id="check_inactive_users",
         replace_existing=True
     )
     
-    logger.info("APScheduler запущен: напоминания и проверка неактивности активны")
+    logger.info(f"APScheduler запущен: таймзона={TIMEZONE}, напоминания и проверка неактивности активны")
 
 
 async def check_inactive_users(bot: Bot):
@@ -116,7 +133,8 @@ async def check_inactive_users(bot: Bot):
     Проверяет неактивных пользователей (не заходили 14+ дней).
     Отправляет им одно напоминание о повторном обращении.
     """
-    cutoff_date = datetime.utcnow() - timedelta(days=14)
+    tz = pytz.timezone(TIMEZONE)
+    cutoff_date = datetime.now(tz=tz) - timedelta(days=14)
     
     async with AsyncSessionLocal() as session:
         # Получаем пользователей, которые не активны 14+ дней
@@ -141,7 +159,7 @@ async def check_inactive_users(bot: Bot):
                         "Нажми /start чтобы записаться на занятие."
                     )
                 )
-                user.last_inactivity_message_sent = datetime.utcnow()
+                user.last_inactivity_message_sent = datetime.now(tz=tz)
                 await session.commit()
                 sent_count += 1
                 logger.info(f"Напоминание о неактивности отправлено пользователю {user.telegram_id}")
