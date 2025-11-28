@@ -117,6 +117,7 @@ async def get_available_dates(trainer: str, days_ahead: int = 30) -> List[str]:
                 weekday = WEEKDAYS_RU_SHORT[date.weekday()]
                 pretty_date = f"{day} {month_name}|{weekday}"
                 result.append(pretty_date)
+            logger.debug(f"Возвращаем {len(result)} тестовых дат: {result}")
             return result
         
         client = _get_client()
@@ -141,7 +142,21 @@ async def get_available_dates(trainer: str, days_ahead: int = 30) -> List[str]:
                     pretty_date = f"{day} {month_name}|{weekday}"
                     result.append(pretty_date)
 
-        return sorted(list(set(result)), key=lambda x: datetime.strptime(x.split("|")[0], "%d %B")) if result else []
+        if result:
+            return sorted(list(set(result)), key=lambda x: datetime.strptime(x.split("|")[0], "%d %B"))
+        else:
+            # Если нет данных в Google Sheets, возвращаем тестовые
+            logger.debug("Google Sheets нет данных - возвращаем тестовые даты")
+            result = []
+            today = datetime.today().date()
+            for i in range(7):
+                date = today + timedelta(days=i)
+                day = date.day
+                month_name = MONTHS_RU[date.month]
+                weekday = WEEKDAYS_RU_SHORT[date.weekday()]
+                pretty_date = f"{day} {month_name}|{weekday}"
+                result.append(pretty_date)
+            return result
     except ValueError as e:
         logger.debug(f"Google Sheets недоступен - генерируем тестовые даты: {e}")
         # Генерируем тестовые даты
@@ -182,21 +197,46 @@ async def get_available_times(trainer: str, date_str: str, lesson_type: str = No
         'lesson_type': 'individual',
         'row_index': 5
     }
+    
+    Режим: 9:00-20:00, каждый час (1-часовые слоты)
     """
     try:
         if not GOOGLE_SHEET_ID or GOOGLE_SHEET_ID.startswith("1aBcDeFgHiJkLmNoPqRsTuVwXyZ"):
-            logger.debug(f"Google Sheets недоступен - генерируем тестовые времена для {trainer}")
-            # Генерируем тестовые времена занятий
-            test_times = [
-                {"time": "09:00", "free": 3, "price": 1000, "lesson_type": "group_single", "row_index": 2},
-                {"time": "10:00", "free": 2, "price": 1000, "lesson_type": "group_single", "row_index": 3},
-                {"time": "11:00", "free": 1, "price": 1000, "lesson_type": "group_single", "row_index": 4},
-                {"time": "15:00", "free": 2, "price": 1800, "lesson_type": "individual", "row_index": 5},
-                {"time": "16:00", "free": 1, "price": 1800, "lesson_type": "individual", "row_index": 6},
-            ]
+            logger.debug(f"Google Sheets недоступен - генерируем тестовые времена 9:00-20:00 для {trainer}")
+            # Генерируем полное расписание 9:00-20:00 (каждый час)
+            # Групповые занятия: 9:00-12:00, 14:00-20:00
+            # Индивидуальные: 15:00-20:00
+            test_times = []
+            
+            # Групповые занятия (1000₽, 3-5 свободных мест)
+            group_slots = ["09:00", "10:00", "11:00", "12:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"]
+            for idx, time_slot in enumerate(group_slots, start=2):
+                test_times.append({
+                    "time": time_slot,
+                    "free": 3 if idx % 2 == 0 else 2,
+                    "price": 1000,
+                    "lesson_type": "group_single",
+                    "row_index": idx
+                })
+            
+            # Индивидуальные занятия (1800₽, 1-2 свободных места)
+            individual_slots = ["15:00", "16:00", "17:00", "18:00", "19:00", "20:00"]
+            for idx, time_slot in enumerate(individual_slots, start=15):
+                test_times.append({
+                    "time": time_slot,
+                    "free": 2 if idx % 2 == 0 else 1,
+                    "price": 1800,
+                    "lesson_type": "individual",
+                    "row_index": idx
+                })
+            
             # Фильтруем по типу если нужно
             if lesson_type:
-                return [t for t in test_times if t["lesson_type"] == lesson_type]
+                filtered = [t for t in test_times if t["lesson_type"] == lesson_type]
+                logger.debug(f"Возвращаем {len(filtered)} тестовых слотов для {lesson_type}")
+                return filtered
+            
+            logger.debug(f"Возвращаем {len(test_times)} тестовых слотов")
             return test_times
         
         client = _get_client()
@@ -207,7 +247,7 @@ async def get_available_times(trainer: str, date_str: str, lesson_type: str = No
         target_month = list(MONTHS_RU.values()).index(date_str.split()[1]) + 1
 
         result = []
-        for idx, row in enumerate(all_records, start=2):  # +2 потому что заголовок + индексация gspread
+        for idx, row in enumerate(all_records, start=2):
             if row["Тренер"] != trainer:
                 continue
             try:
@@ -215,7 +255,6 @@ async def get_available_times(trainer: str, date_str: str, lesson_type: str = No
                 if row_date.day == target_day and row_date.month == target_month:
                     free = int(row.get("Свободно", 0))
                     
-                    # Фильтруем по типу занятия если указан
                     row_lesson_type = row.get("Типтренировки", "").lower()
                     if lesson_type and row_lesson_type != lesson_type.lower():
                         continue
@@ -230,19 +269,53 @@ async def get_available_times(trainer: str, date_str: str, lesson_type: str = No
                         })
             except ValueError:
                 continue
-        return result if result else [
-            {"time": "09:00", "free": 3, "price": 1000, "lesson_type": "group_single", "row_index": 2},
-            {"time": "15:00", "free": 2, "price": 1800, "lesson_type": "individual", "row_index": 5},
-        ]
+        
+        if result:
+            return result
+        else:
+            # Если нет данных в Google Sheets, возвращаем тестовые 9:00-20:00
+            logger.debug(f"Google Sheets нет данных для {trainer} на {date_str} - возвращаем тестовые слоты")
+            test_times = []
+            
+            group_slots = ["09:00", "10:00", "11:00", "12:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"]
+            for idx, time_slot in enumerate(group_slots, start=2):
+                test_times.append({
+                    "time": time_slot,
+                    "free": 3 if idx % 2 == 0 else 2,
+                    "price": 1000,
+                    "lesson_type": "group_single",
+                    "row_index": idx
+                })
+            
+            if lesson_type:
+                return [t for t in test_times if t["lesson_type"] == lesson_type]
+            return test_times
     except ValueError as e:
         logger.debug(f"Google Sheets недоступен - генерируем тестовые времена: {e}")
-        test_times = [
+        test_times = []
+        
+        group_slots = ["09:00", "10:00", "11:00", "12:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"]
+        for idx, time_slot in enumerate(group_slots, start=2):
+            test_times.append({
+                "time": time_slot,
+                "free": 3 if idx % 2 == 0 else 2,
+                "price": 1000,
+                "lesson_type": "group_single",
+                "row_index": idx
+            })
+        
+        if lesson_type:
+            return [t for t in test_times if t["lesson_type"] == lesson_type]
+        return test_times
+    except Exception as e:
+        logger.error(f"Ошибка получения времени: {e}")
+        # Возвращаем основные слоты
+        return [
             {"time": "09:00", "free": 3, "price": 1000, "lesson_type": "group_single", "row_index": 2},
             {"time": "10:00", "free": 2, "price": 1000, "lesson_type": "group_single", "row_index": 3},
             {"time": "15:00", "free": 2, "price": 1800, "lesson_type": "individual", "row_index": 5},
+            {"time": "16:00", "free": 1, "price": 1800, "lesson_type": "individual", "row_index": 6},
         ]
-        if lesson_type:
-            return [t for t in test_times if t["lesson_type"] == lesson_type]
         return test_times
     except Exception as e:
         logger.error(f"Ошибка получения времени: {e}")

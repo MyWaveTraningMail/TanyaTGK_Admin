@@ -1022,3 +1022,51 @@ WHERE bookings.user_id = ? ORDER BY bookings.date DESC]
 2025-11-28 13:35:27,899 - aiogram.dispatcher - WARNING - Received SIGINT signal
 2025-11-28 13:35:27,900 - aiogram.dispatcher - INFO - Polling stopped for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
 2025-11-28 13:35:27,900 - aiogram.dispatcher - INFO - Polling stopped
+2025-11-28 13:36:37,883 - __main__ - INFO - Запуск бота в режиме polling...
+2025-11-28 13:36:37,887 - db.database - INFO - База данных инициализирована (SQLite)
+2025-11-28 13:36:37,888 - apscheduler.scheduler - INFO - Scheduler started
+2025-11-28 13:36:37,890 - apscheduler.scheduler - INFO - Added job "check_inactive_users" to job store "default"
+2025-11-28 13:36:37,890 - services.scheduler - INFO - APScheduler запущен: напоминания и проверка неактивности активны
+2025-11-28 13:36:38,196 - __main__ - INFO - Бот запущен и готов к работе
+2025-11-28 13:36:38,197 - aiogram.dispatcher - INFO - Start polling
+2025-11-28 13:36:38,284 - aiogram.dispatcher - INFO - Run polling for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
+2025-11-28 13:36:39,644 - aiogram.dispatcher - WARNING - Received SIGTERM signal
+2025-11-28 13:36:39,645 - aiogram.dispatcher - INFO - Polling stopped for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
+2025-11-28 13:36:39,645 - aiogram.dispatcher - INFO - Polling stopped
+2025-11-28 13:38:33,176 - __main__ - INFO - Запуск бота в режиме polling...
+2025-11-28 13:38:33,182 - db.database - INFO - База данных инициализирована (SQLite)
+2025-11-28 13:38:33,183 - apscheduler.scheduler - INFO - Scheduler started
+2025-11-28 13:38:33,185 - apscheduler.scheduler - INFO - Added job "check_inactive_users" to job store "default"
+2025-11-28 13:38:33,185 - services.scheduler - INFO - APScheduler запущен: напоминания и проверка неактивности активны
+2025-11-28 13:38:33,492 - __main__ - INFO - Бот запущен и готов к работе
+2025-11-28 13:38:33,492 - aiogram.dispatcher - INFO - Start polling
+2025-11-28 13:38:33,580 - aiogram.dispatcher - INFO - Run polling for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
+2025-11-28 13:38:42,601 - aiogram.event - INFO - Update id=23846946 is handled. Duration 968 ms by bot id=8213931908
+2025-11-28 13:38:45,292 - aiogram.event - INFO - Update id=23846947 is handled. Duration 714 ms by bot id=8213931908
+2025-11-28 13:38:49,239 - aiogram.event - INFO - Update id=23846948 is handled. Duration 561 ms by bot id=8213931908
+2025-11-28 13:38:56,652 - aiogram.event - INFO - Update id=23846949 is handled. Duration 701 ms by bot id=8213931908
+2025-11-28 13:38:58,813 - aiogram.event - INFO - Update id=23846950 is handled. Duration 643 ms by bot id=8213931908
+2025-11-28 13:39:00,579 - aiogram.event - INFO - Update id=23846951 is handled. Duration 601 ms by bot id=8213931908
+2025-11-28 13:39:05,154 - aiogram.event - INFO - Update id=23846952 is handled. Duration 593 ms by bot id=8213931908
+2025-11-28 13:39:10,185 - aiogram.event - INFO - Update id=23846953 is handled. Duration 762 ms by bot id=8213931908
+2025-11-28 13:39:12,619 - aiogram.event - INFO - Update id=23846954 is handled. Duration 684 ms by bot id=8213931908
+2025-11-28 13:39:21,743 - aiogram.event - INFO - Update id=23846955 is handled. Duration 625 ms by bot id=8213931908
+2025-11-28 13:39:23,726 - aiogram.event - INFO - Update id=23846956 is handled. Duration 618 ms by bot id=8213931908
+2025-11-28 13:39:25,462 - aiogram.event - INFO - Update id=23846957 is handled. Duration 552 ms by bot id=8213931908
+2025-11-28 13:41:51,831 - aiogram.dispatcher - WARNING - Received SIGINT signal
+2025-11-28 13:41:51,832 - aiogram.dispatcher - INFO - Polling stopped for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
+2025-11-28 13:41:51,832 - aiogram.dispatcher - INFO - Polling stopped
+2025-11-28 13:46:05,221 - __main__ - INFO - Запуск бота в режиме polling...
+2025-11-28 13:46:05,225 - db.database - INFO - База данных инициализирована (SQLite)
+2025-11-28 13:46:05,226 - apscheduler.scheduler - INFO - Scheduler started
+2025-11-28 13:46:05,228 - apscheduler.scheduler - INFO - Added job "check_inactive_users" to job store "default"
+2025-11-28 13:46:05,228 - services.scheduler - INFO - APScheduler запущен: напоминания и проверка неактивности активны
+2025-11-28 13:46:05,547 - __main__ - INFO - Бот запущен и готов к работе
+2025-11-28 13:46:05,547 - aiogram.dispatcher - INFO - Start polling
+2025-11-28 13:46:05,635 - aiogram.dispatcher - INFO - Run polling for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
+2025-11-28 13:46:14,286 - aiogram.event - INFO - Update id=23846958 is handled. Duration 983 ms by bot id=8213931908
+2025-11-28 13:46:16,628 - aiogram.event - INFO - Update id=23846959 is handled. Duration 567 ms by bot id=8213931908
+2025-11-28 13:46:19,703 - aiogram.event - INFO - Update id=23846960 is handled. Duration 619 ms by bot id=8213931908
+2025-11-28 13:46:27,062 - aiogram.dispatcher - WARNING - Received SIGINT signal
+2025-11-28 13:46:27,063 - aiogram.dispatcher - INFO - Polling stopped for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
+2025-11-28 13:46:27,063 - aiogram.dispatcher - INFO - Polling stopped
