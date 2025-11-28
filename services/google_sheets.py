@@ -28,6 +28,42 @@ def _get_client():
     return gspread.authorize(creds)
 
 
+def _open_worksheet(title: str):
+    """Возвращает worksheet по названию листа, с подробными логами об ошибках.
+
+    Бросает исключение дальше, чтобы вызывающий код мог обработать ошибку.
+    """
+    try:
+        client = _get_client()
+    except FileNotFoundError as e:
+        logger.error(f"Файл сервисного аккаунта не найден: {GOOGLE_SERVICE_ACCOUNT_FILE} — {e}")
+        raise
+    except Exception as e:
+        logger.error(f"Ошибка инициализации клиента Google Sheets: {e}")
+        raise
+
+    try:
+        spreadsheet = client.open_by_key(GOOGLE_SHEET_ID)
+    except gspread.exceptions.SpreadsheetNotFound:
+        logger.error(
+            f"Google Sheet с ID '{GOOGLE_SHEET_ID}' не найден. Проверьте переменную GOOGLE_SHEET_ID и доступ сервисного аккаунта."
+        )
+        raise
+    except gspread.exceptions.APIError as e:
+        logger.error(
+            f"API Error при доступе к Google Sheets: {e}. Проверьте права доступа сервисного аккаунта и что sheet id корректен."
+        )
+        raise
+
+    try:
+        sheet = spreadsheet.worksheet(title)
+    except gspread.exceptions.WorksheetNotFound:
+        logger.error(f"Лист с названием '{title}' не найден в таблице {GOOGLE_SHEET_ID}.")
+        raise
+
+    return sheet
+
+
 async def get_available_trainers() -> List[str]:
     """Возвращает список тренеров у которых есть хотя бы одно свободное место в ближайшие 30 дней"""
     try:
@@ -48,7 +84,7 @@ async def get_available_dates(trainer: str, days_ahead: int = 30) -> List[str]:
     """Возвращает список дат в формате '15 марта|пт' для красивых кнопок"""
     try:
         client = _get_client()
-        sheet = client.open_by_key(GOOGLE_SHEET_ID).worksheet("Schedule")
+            sheet = _open_worksheet("Schedule")
         records = sheet.get_all_records()
 
         result = []
@@ -90,7 +126,7 @@ async def get_available_times(trainer: str, date_str: str, lesson_type: str = No
     """
     try:
         client = _get_client()
-        sheet = client.open_by_key(GOOGLE_SHEET_ID).worksheet("Schedule")
+            sheet = _open_worksheet("Schedule")
         all_records = sheet.get_all_records()
 
         target_day = int(date_str.split()[0])
@@ -129,7 +165,7 @@ async def get_available_times(trainer: str, date_str: str, lesson_type: str = No
 async def get_faq_answers() -> list[tuple[str, str]]:
     try:
         client = _get_client()
-        sheet = client.open_by_key(GOOGLE_SHEET_ID).worksheet("FAQ")
+            sheet = _open_worksheet("FAQ")
         records = sheet.get_all_records()
         return [(row["Вопрос"], row["Ответ"]) for row in records if row.get("Вопрос") and row.get("Ответ")]
     except Exception as e:
@@ -150,7 +186,7 @@ async def update_free_slots(row_index: int, delta: int) -> bool:
     """
     try:
         client = _get_client()
-        sheet = client.open_by_key(GOOGLE_SHEET_ID).worksheet("Schedule")
+            sheet = _open_worksheet("Schedule")
         
         # Находим столбец "Свободно"
         headers = sheet.row_values(1)
@@ -184,7 +220,7 @@ async def get_lesson_type_from_sheet(trainer: str, date_str: str, time_str: str)
     """
     try:
         client = _get_client()
-        sheet = client.open_by_key(GOOGLE_SHEET_ID).worksheet("Schedule")
+            sheet = _open_worksheet("Schedule")
         all_records = sheet.get_all_records()
 
         target_day = int(date_str.split()[0])
@@ -220,7 +256,7 @@ async def update_lesson_type(row_index: int, lesson_type: str) -> bool:
     """
     try:
         client = _get_client()
-        sheet = client.open_by_key(GOOGLE_SHEET_ID).worksheet("Schedule")
+            sheet = _open_worksheet("Schedule")
         
         headers = sheet.row_values(1)
         lesson_type_col = headers.index("Типтренировки") + 1 if "Типтренировки" in headers else 6
@@ -246,7 +282,7 @@ async def log_event_to_sheet(telegram_id: int, action_text: str) -> bool:
     """
     try:
         client = _get_client()
-        sheet = client.open_by_key(GOOGLE_SHEET_ID).worksheet("Events")
+            sheet = _open_worksheet("Events")
         
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         

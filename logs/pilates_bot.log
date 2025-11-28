@@ -761,3 +761,199 @@ sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) UNIQUE constraint failed
 2025-11-27 08:47:03,158 - aiogram.event - INFO - Update id=23846930 is handled. Duration 366 ms by bot id=8213931908
 2025-11-27 08:47:09,234 - aiogram.event - INFO - Update id=23846931 is handled. Duration 153 ms by bot id=8213931908
 2025-11-27 08:47:12,003 - aiogram.event - INFO - Update id=23846932 is handled. Duration 128 ms by bot id=8213931908
+2025-11-28 11:47:03,673 - __main__ - INFO - Запуск бота в режиме polling...
+2025-11-28 11:47:03,904 - db.database - INFO - База данных инициализирована (SQLite)
+2025-11-28 11:47:03,905 - apscheduler.scheduler - INFO - Scheduler started
+2025-11-28 11:47:03,908 - apscheduler.scheduler - INFO - Added job "check_inactive_users" to job store "default"
+2025-11-28 11:47:03,908 - services.scheduler - INFO - APScheduler запущен: напоминания и проверка неактивности активны
+2025-11-28 11:47:04,236 - __main__ - INFO - Бот запущен и готов к работе
+2025-11-28 11:47:04,236 - aiogram.dispatcher - INFO - Start polling
+2025-11-28 11:47:04,326 - aiogram.dispatcher - INFO - Run polling for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
+2025-11-28 11:47:28,751 - utils.helpers - ERROR - Ошибка при обновлении last_activity для 510686579: (sqlite3.OperationalError) no such column: users.last_inactivity_message_sent
+[SQL: SELECT users.id, users.telegram_id, users.full_name, users.phone, users.created_at, users.last_activity, users.last_inactivity_message_sent 
+FROM users 
+WHERE users.telegram_id = ?]
+[parameters: (510686579,)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-28 11:47:29,021 - services.google_sheets - ERROR - Ошибка логирования действия: <Response [404]>
+2025-11-28 11:47:29,342 - aiogram.event - INFO - Update id=23846933 is handled. Duration 603 ms by bot id=8213931908
+2025-11-28 11:47:41,022 - services.google_sheets - ERROR - Ошибка чтения тренеров из Google Sheets: <Response [404]>
+2025-11-28 11:47:41,178 - aiogram.event - INFO - Update id=23846934 is handled. Duration 464 ms by bot id=8213931908
+2025-11-28 11:48:05,141 - utils.helpers - ERROR - Ошибка при обновлении last_activity для 510686579: (sqlite3.OperationalError) no such column: users.last_inactivity_message_sent
+[SQL: SELECT users.id, users.telegram_id, users.full_name, users.phone, users.created_at, users.last_activity, users.last_inactivity_message_sent 
+FROM users 
+WHERE users.telegram_id = ?]
+[parameters: (510686579,)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-28 11:48:05,403 - services.google_sheets - ERROR - Ошибка логирования действия: <Response [404]>
+2025-11-28 11:48:05,688 - aiogram.event - INFO - Update id=23846935 is handled. Duration 550 ms by bot id=8213931908
+2025-11-28 11:48:09,880 - utils.helpers - ERROR - Ошибка при обновлении last_activity для 510686579: (sqlite3.OperationalError) no such column: users.last_inactivity_message_sent
+[SQL: SELECT users.id, users.telegram_id, users.full_name, users.phone, users.created_at, users.last_activity, users.last_inactivity_message_sent 
+FROM users 
+WHERE users.telegram_id = ?]
+[parameters: (510686579,)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-28 11:48:10,153 - services.google_sheets - ERROR - Ошибка логирования действия: <Response [404]>
+2025-11-28 11:48:10,162 - aiogram.event - INFO - Update id=23846936 is not handled. Duration 286 ms by bot id=8213931908
+2025-11-28 11:48:10,163 - aiogram.event - ERROR - Cause exception while process update id=23846936 by bot id=8213931908
+OperationalError: (sqlite3.OperationalError) no such column: bookings.lesson_type
+[SQL: SELECT bookings.id, bookings.user_id, bookings.trainer, bookings.date, bookings.time, bookings.price, bookings.payment_type, bookings.status, bookings.lesson_type, bookings.created_at, bookings.reminder_12_sent, bookings.reminder_2_sent 
+FROM bookings 
+WHERE bookings.user_id = ? ORDER BY bookings.date DESC]
+[parameters: (510686579,)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 941, in do_execute
+    cursor.execute(statement, parameters)
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/dialects/sqlite/aiosqlite.py", line 147, in execute
+    self._adapt_connection._handle_exception(error)
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/dialects/sqlite/aiosqlite.py", line 298, in _handle_exception
+    raise error
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/dialects/sqlite/aiosqlite.py", line 129, in execute
+    self.await_(_cursor.execute(operation, parameters))
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiosqlite/cursor.py", line 48, in execute
+    await self._execute(self._cursor.execute, sql, parameters)
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiosqlite/cursor.py", line 40, in _execute
+    return await self._conn._execute(fn, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiosqlite/core.py", line 132, in _execute
+    return await future
+           ^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiosqlite/core.py", line 115, in run
+    result = function()
+             ^^^^^^^^^^
+sqlite3.OperationalError: no such column: bookings.lesson_type
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiogram/dispatcher/dispatcher.py", line 309, in _process_update
+    response = await self.feed_update(bot, update, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiogram/dispatcher/dispatcher.py", line 158, in feed_update
+    response = await self.update.wrap_outer_middleware(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiogram/dispatcher/middlewares/error.py", line 25, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiogram/dispatcher/middlewares/user_context.py", line 56, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiogram/fsm/middleware.py", line 42, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiogram/dispatcher/dispatcher.py", line 276, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiogram/dispatcher/router.py", line 146, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiogram/dispatcher/router.py", line 141, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiogram/dispatcher/router.py", line 174, in _propagate_event
+    response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiogram/dispatcher/router.py", line 146, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiogram/dispatcher/router.py", line 141, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiogram/dispatcher/router.py", line 166, in _propagate_event
+    response = await observer.trigger(event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "/workspaces/TanyaTGK_Admin/routers/profile.py", line 25, in my_bookings
+    bookings = await session.execute(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/ext/asyncio/session.py", line 461, in execute
+    result = await greenlet_spawn(
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 201, in greenlet_spawn
+    result = context.throw(*sys.exc_info())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2362, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/orm/session.py", line 2247, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/orm/context.py", line 305, in orm_execute_statement
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1418, in execute
+    return meth(
+           ^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/sql/elements.py", line 515, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1640, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/engine/default.py", line 941, in do_execute
+    cursor.execute(statement, parameters)
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/dialects/sqlite/aiosqlite.py", line 147, in execute
+    self._adapt_connection._handle_exception(error)
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/dialects/sqlite/aiosqlite.py", line 298, in _handle_exception
+    raise error
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/dialects/sqlite/aiosqlite.py", line 129, in execute
+    self.await_(_cursor.execute(operation, parameters))
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 132, in await_only
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return,attr-defined] # noqa: E501
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/sqlalchemy/util/_concurrency_py3k.py", line 196, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiosqlite/cursor.py", line 48, in execute
+    await self._execute(self._cursor.execute, sql, parameters)
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiosqlite/cursor.py", line 40, in _execute
+    return await self._conn._execute(fn, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiosqlite/core.py", line 132, in _execute
+    return await future
+           ^^^^^^^^^^^^
+  File "/usr/local/python/3.12.1/lib/python3.12/site-packages/aiosqlite/core.py", line 115, in run
+    result = function()
+             ^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: bookings.lesson_type
+[SQL: SELECT bookings.id, bookings.user_id, bookings.trainer, bookings.date, bookings.time, bookings.price, bookings.payment_type, bookings.status, bookings.lesson_type, bookings.created_at, bookings.reminder_12_sent, bookings.reminder_2_sent 
+FROM bookings 
+WHERE bookings.user_id = ? ORDER BY bookings.date DESC]
+[parameters: (510686579,)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2025-11-28 11:48:32,277 - services.google_sheets - ERROR - Ошибка чтения FAQ: <Response [404]>
+2025-11-28 11:48:32,564 - aiogram.event - INFO - Update id=23846937 is handled. Duration 538 ms by bot id=8213931908
+2025-11-28 11:49:08,221 - aiogram.event - INFO - Update id=23846938 is handled. Duration 298 ms by bot id=8213931908
+2025-11-28 11:49:25,414 - aiogram.event - INFO - Update id=23846939 is not handled. Duration 2 ms by bot id=8213931908
+2025-11-28 11:52:00,093 - aiogram.dispatcher - WARNING - Received SIGINT signal
+2025-11-28 11:52:00,094 - aiogram.dispatcher - INFO - Polling stopped for bot @PilatesReformerIzh_bot id=8213931908 - 'PilatesReformerIzh'
+2025-11-28 11:52:00,094 - aiogram.dispatcher - INFO - Polling stopped
